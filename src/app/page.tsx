@@ -1,5 +1,3 @@
-import Image from "next/image";
-import styles from "./page.module.css";
 import SectionLayout from "./components/SectionLayout";
 import RowSection from "./components/RowSection";
 
