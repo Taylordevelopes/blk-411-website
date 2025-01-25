@@ -22,8 +22,8 @@ export default function FeaturesPage() {
           "Mobile-Friendly Design for On-the-Go Access",
         ]}
         descriptionImage="/our-features-page-pic.jpg"
-        buttonText="Sign Up Now"
-        buttonLink="/registrtation"
+        buttonText="Register Your Business"
+        buttonLink="/registration"
       />
     </div>
   );
