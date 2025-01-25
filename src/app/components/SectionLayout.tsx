@@ -34,6 +34,7 @@ function SectionLayout({
   descriptionImage,
   buttonText,
   buttonLink,
+  headerText,
 }: SectionLayoutProps) {
   // Helper function to determine header position styles
   const getPositionStyles = (position: string): React.CSSProperties => {
@@ -112,15 +113,36 @@ function SectionLayout({
           </Carousel>
         ) : (
           heroImage && (
-            <Image
-              src={heroImage}
-              alt="Hero"
-              layout="responsive"
-              width={1920}
-              height={1080}
-              objectFit="cover"
-              className="hero-image"
-            />
+            <div className="position-relative">
+              <Image
+                src={heroImage}
+                alt="Hero"
+                layout="responsive"
+                width={1920}
+                height={1080}
+                objectFit="cover"
+                className="hero-image"
+              />
+              {headerText && (
+                <div
+                  className="header-text"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    textAlign: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    padding: "20px",
+                    borderRadius: "10px",
+                    maxWidth: "60%",
+                    color: "#fff",
+                  }}
+                >
+                  <h1>{headerText}</h1>
+                </div>
+              )}
+            </div>
           )
         )}
       </div>
