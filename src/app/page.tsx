@@ -1,95 +1,45 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import SectionLayout from "./components/SectionLayout";
+import RowSection from "./components/RowSection";
 
 export default function Home() {
+  const columnData = [
+    {
+      title: "Who We Are",
+      description:
+        "Black Excellence Technology Group is a Black Owned Telecommunications firm that is looking to grow black business through technology.",
+      buttonLabel: "Learn More >>",
+      navigateTo: "/aboutus",
+    },
+    {
+      title: "Why The Black 411",
+      description:
+        "Blacks earn over $1.3 Trillion dollars per year but yet experience the highest levels of poverty. Its is time we keep our dollars in our communities.",
+      buttonLabel: "Register Your Business >>",
+      navigateTo: "/registration",
+    },
+    {
+      title: "Our Mission",
+      description:
+        "Provide a Targeted Information Service services to help consumers find and locate Black owned businesses across the nation.",
+      buttonLabel: "View Features >>",
+      navigateTo: "/features",
+    },
+  ];
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <>
+      <SectionLayout
+        heroImage="/homeheader.jpg"
+        title="WHAT IS THE BLACK 411?"
+        description={`Simply use your cell phone to text or call to find black-owned businesses.<br /> <br/>
+          The Black 411 is not your same old Black Business Directory. It is not one of those apps that keeps slowing down your phone performance and that uses your phone memory.<br />
+          We also are not an online directory that you have to do all the work to find the business, product or service you are looking for.<br /><br/>
+          With The Black 411 all you do is Text or Call and we do it all!<br /> <br/>
+          The Black 411 is a powerful new service that allows you to quickly find the black-owned business or service you are looking for Fast…. Simple…. Immediate!`}
+        headerText=" Text '(Item/Business) in (Any U.S City and State)' to (208)225-5960!"
+      />
+      <RowSection columns={columnData} />
+    </>
   );
 }
