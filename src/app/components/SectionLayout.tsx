@@ -3,48 +3,124 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Carousel from "react-bootstrap/Carousel";
+
+interface CarouselImage {
+  src: string;
+  headerText: string;
+  position: "top-left" | "top-center" | "top-right" | "center";
+  maxWidth?: string; // Optional max-width for individual slides
+  marginBottom?: string; // Optional margin-bottom for longer text
+}
 
 interface SectionLayoutProps {
-  heroImage: string; // Path to the hero image
+  heroImage?: string; // Optional hero image path
+  carouselImages?: CarouselImage[]; // Array of carousel images with headers and positions
   title: string; // Title for the description section
   description?: string; // Optional text content for the description section
   features?: string[]; // Optional array of features (bulleted list)
   descriptionImage?: string; // Optional image for the description section
-  headerText?: string; // Optional header text for the hero section
   buttonText?: string; // Optional button text
   buttonLink?: string; // Optional button link
 }
 
 function SectionLayout({
   heroImage,
+  carouselImages,
   title,
   description,
   features,
   descriptionImage,
-  headerText,
   buttonText,
   buttonLink,
 }: SectionLayoutProps) {
+  // Helper function to determine header position styles
+  const getPositionStyles = (position: string): React.CSSProperties => {
+    switch (position) {
+      case "top-left":
+        return {
+          position: "absolute",
+          top: "15%",
+          left: "5%",
+          textAlign: "left" as const,
+        };
+      case "top-center":
+        return {
+          position: "absolute",
+          top: "15%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          textAlign: "center" as const,
+        };
+      case "top-right":
+        return {
+          position: "absolute",
+          top: "15%",
+          right: "5%",
+          textAlign: "right" as const,
+        };
+      case "center":
+      default:
+        return {
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          textAlign: "center" as const,
+        };
+    }
+  };
+
   return (
     <div>
-      {/* Hero Image Section */}
+      {/* Hero Image or Carousel Section */}
       <div
         className="hero-container position-relative text-center"
         style={{ position: "relative", textAlign: "center", color: "white" }}
       >
-        <Image
-          src={heroImage}
-          alt="Hero"
-          layout="responsive"
-          width={1920} // Assumes a default 16:9 aspect ratio
-          height={1080}
-          objectFit="cover"
-          className="hero-image"
-        />
-        {headerText && (
-          <h1 className="position-absolute top-50 start-50 translate-middle fw-bold hero-header">
-            {headerText}
-          </h1>
+        {carouselImages && carouselImages.length > 0 ? (
+          <Carousel>
+            {carouselImages.map((item, index) => (
+              <Carousel.Item key={index}>
+                <Image
+                  src={item.src}
+                  alt={`Slide ${index + 1}`}
+                  layout="responsive"
+                  width={1920}
+                  height={1080}
+                  objectFit="cover"
+                  className="hero-image"
+                />
+                <Carousel.Caption
+                  style={{
+                    ...getPositionStyles(item.position),
+                  }}
+                >
+                  <h1
+                    className="carousel-header"
+                    style={{
+                      maxWidth: item.maxWidth || "60%", // Default max-width if not provided
+                      marginBottom: item.marginBottom || "0", // Default margin-bottom
+                    }}
+                  >
+                    {item.headerText}
+                  </h1>
+                </Carousel.Caption>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        ) : (
+          heroImage && (
+            <Image
+              src={heroImage}
+              alt="Hero"
+              layout="responsive"
+              width={1920}
+              height={1080}
+              objectFit="cover"
+              className="hero-image"
+            />
+          )
         )}
       </div>
 
@@ -104,27 +180,29 @@ function SectionLayout({
       </div>
 
       <style jsx>{`
-        .hero-header {
-          font-size: 3rem;
+        .carousel-header {
+          font-size: 2rem;
           padding: 20px;
           background-color: rgba(0, 0, 0, 0.5);
           border-radius: 10px;
-          max-width: 90%;
-          line-height: 1.2;
+          color: #fff;
           text-align: center;
+          line-height: 1.2;
         }
 
         @media (max-width: 768px) {
-          .hero-header {
+          .carousel-header {
             font-size: 2rem;
             padding: 15px;
+            max-width: 80%;
           }
         }
 
         @media (max-width: 480px) {
-          .hero-header {
-            font-size: 1.5rem;
+          .carousel-header {
+            font-size: 12px;
             padding: 10px;
+            max-width: 90%;
           }
         }
       `}</style>
