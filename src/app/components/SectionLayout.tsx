@@ -22,6 +22,7 @@ interface SectionLayoutProps {
   descriptionImage?: string; // Optional image for the description section
   buttonText?: string; // Optional button text
   buttonLink?: string; // Optional button link
+  headerText?: string;
 }
 
 function SectionLayout({
