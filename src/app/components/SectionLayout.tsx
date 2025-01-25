@@ -201,9 +201,10 @@ function SectionLayout({
 
         @media (max-width: 480px) {
           .carousel-header {
-            font-size: 12px;
+            font-size: 15px;
             padding: 10px;
             max-width: 90%;
+            font-weight: bold;
           }
         }
       `}</style>

@@ -34,14 +34,14 @@ export default function Home() {
             headerText:
               "Stop manual searching... Texting is faster and more convenient... Use The Black 411. It's the fastest way to find black owned businesses. ",
             position: "top-left",
-            maxWidth: "60%",
+            maxWidth: "75%",
           },
           {
             src: "/header-pic-7.jpg",
             headerText:
               "There are now 2.6 Million Black owned Businesses in the U.S, There are Black Entrepreneurs in almost every field. The Black 411 provides a simple, fast and immediate way to find them when you need them!",
             position: "top-left",
-            maxWidth: "60%",
+            maxWidth: "90%",
             marginBottom: "20px",
           },
           {
@@ -49,7 +49,7 @@ export default function Home() {
             headerText:
               "Blacks earn $1.3 Trillion and less than 3% of that goes to support black owned businesses..",
             position: "top-right",
-            maxWidth: "90%",
+            maxWidth: "100%",
           },
           {
             src: "/header-pic-8.jpg",
