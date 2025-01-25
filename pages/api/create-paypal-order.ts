@@ -2,6 +2,15 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const PAYPAL_API = "https://api-m.sandbox.paypal.com";
 
+interface PurchaseUnit {
+  amount: {
+    currency_code: string;
+    value: string;
+  };
+  reference_id?: string;
+  description?: string;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -37,7 +46,7 @@ export default async function handler(
         },
         body: JSON.stringify({
           intent: "CAPTURE",
-          purchase_units: purchase_units.map((unit: any) => ({
+          purchase_units: purchase_units.map((unit: PurchaseUnit) => ({
             ...unit,
             amount: {
               currency_code: unit.amount.currency_code || "USD", // Default to USD

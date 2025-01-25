@@ -13,7 +13,6 @@ import {
 } from "react-bootstrap";
 import { FaQuestionCircle } from "react-icons/fa";
 import { geocodeAddress } from "../utils/geocodeService";
-import { createPayPalOrder } from "../utils/paypalService";
 import Image from "next/image";
 
 type FormData = {
