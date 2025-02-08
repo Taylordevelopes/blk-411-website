@@ -11,6 +11,7 @@ import {
   OverlayTrigger,
 } from "react-bootstrap";
 import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { FaQuestionCircle } from "react-icons/fa";
 import { geocodeAddress } from "../utils/geocodeService";
 import Image from "next/image";
@@ -35,7 +36,10 @@ type FormData = {
 
 export default function CustomerAddBusiness() {
   const searchParams = useSearchParams(); // ✅ Get URL params
-  const agentCodeParam = searchParams?.get("ref") || "";
+  const agentCode = useMemo(
+    () => searchParams?.get("agentCode") || "",
+    [searchParams]
+  );
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -52,7 +56,7 @@ export default function CustomerAddBusiness() {
     latitude: "",
     longitude: "",
     tags: "",
-    agentCode: agentCodeParam,
+    agentCode: agentCode,
   });
 
   const [errors, setErrors] = useState<{
@@ -403,7 +407,7 @@ export default function CustomerAddBusiness() {
                 value={formData.agentCode}
                 onChange={handleChange} // ✅ Ensure it's controlled when needed
                 className="bg-light"
-                readOnly={!!agentCodeParam} // ✅ Read-only only if agentCodeParam exists
+                readOnly={!!agentCode} // ✅ Read-only only if agentCodeParam exists
                 placeholder="Enter agent code if applicable"
               />
             </Form.Group>
