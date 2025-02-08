@@ -34,14 +34,16 @@ type FormData = {
 };
 
 export default function CustomerAddBusiness() {
-  const searchParams = useSearchParams(); // ✅ Get URL params
-  const [agentCode, setAgentCode] = useState("");
+  const [agentCode, setAgentCode] = useState<string | null>(null);
 
-  // ✅ Extract the agent code *after hydration*
+  // ✅ Extract the agent code from URL only on client-side
   useEffect(() => {
-    const code = searchParams?.get("ref") || "";
-    setAgentCode(code); // ✅ Only set this after hydration
-  }, [searchParams]);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("ref") || "";
+      setAgentCode(code); // ✅ Only set this after hydration
+    }
+  }, []);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -62,7 +64,9 @@ export default function CustomerAddBusiness() {
   });
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, agentCode })); // ✅ Ensure formData is updated when agentCode changes
+    if (agentCode !== null) {
+      setFormData((prev) => ({ ...prev, agentCode }));
+    }
   }, [agentCode]);
 
   const [errors, setErrors] = useState<{
