@@ -10,7 +10,6 @@ import {
   Tooltip,
   OverlayTrigger,
 } from "react-bootstrap";
-import { useSearchParams } from "next/navigation";
 import { FaQuestionCircle } from "react-icons/fa";
 import { geocodeAddress } from "../utils/geocodeService";
 import Image from "next/image";
