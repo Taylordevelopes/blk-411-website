@@ -1,7 +1,6 @@
-// components/CustomerAddBusiness.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
   Button,
@@ -11,6 +10,7 @@ import {
   Tooltip,
   OverlayTrigger,
 } from "react-bootstrap";
+import { useSearchParams } from "next/navigation";
 import { FaQuestionCircle } from "react-icons/fa";
 import { geocodeAddress } from "../utils/geocodeService";
 import Image from "next/image";
@@ -30,9 +30,13 @@ type FormData = {
   latitude: number | "";
   longitude: number | "";
   tags: string;
+  agentCode: string;
 };
 
 export default function CustomerAddBusiness() {
+  const searchParams = useSearchParams(); // ✅ Get URL params
+  const agentCodeParam = searchParams?.get("ref") || "";
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
     category: "",
@@ -48,6 +52,7 @@ export default function CustomerAddBusiness() {
     latitude: "",
     longitude: "",
     tags: "",
+    agentCode: agentCodeParam,
   });
 
   const [errors, setErrors] = useState<{
@@ -387,6 +392,19 @@ export default function CustomerAddBusiness() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
+              />
+            </Form.Group>
+            <h4>Agent Referral Code</h4>
+            <Form.Group className="mb-3" controlId="agentCode">
+              <Form.Label>Agent Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="agentCode"
+                value={formData.agentCode}
+                onChange={handleChange} // ✅ Ensure it's controlled when needed
+                className="bg-light"
+                readOnly={!!agentCodeParam} // ✅ Read-only only if agentCodeParam exists
+                placeholder="Enter agent code if applicable"
               />
             </Form.Group>
 
