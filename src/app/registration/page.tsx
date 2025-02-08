@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Form,
   Button,
@@ -35,10 +35,13 @@ type FormData = {
 
 export default function CustomerAddBusiness() {
   const searchParams = useSearchParams(); // ✅ Get URL params
-  const agentCodeParam = useMemo(
-    () => searchParams?.get("ref") || "",
-    [searchParams]
-  );
+  const [agentCode, setAgentCode] = useState("");
+
+  // ✅ Extract the agent code *after hydration*
+  useEffect(() => {
+    const code = searchParams?.get("ref") || "";
+    setAgentCode(code); // ✅ Only set this after hydration
+  }, [searchParams]);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -55,8 +58,12 @@ export default function CustomerAddBusiness() {
     latitude: "",
     longitude: "",
     tags: "",
-    agentCode: agentCodeParam,
+    agentCode: "",
   });
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, agentCode })); // ✅ Ensure formData is updated when agentCode changes
+  }, [agentCode]);
 
   const [errors, setErrors] = useState<{
     phoneNumber?: string;
@@ -406,7 +413,7 @@ export default function CustomerAddBusiness() {
                 value={formData.agentCode}
                 onChange={handleChange} // ✅ Ensure it's controlled when needed
                 className="bg-light"
-                readOnly={!!agentCodeParam} // ✅ Read-only only if agentCodeParam exists
+                readOnly={!!agentCode}
                 placeholder="Enter agent code if applicable"
               />
             </Form.Group>
