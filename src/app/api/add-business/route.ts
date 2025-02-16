@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       latitude,
       longitude,
       tags,
+      agentCode,
     } = data;
 
     // Convert empty strings to null for latitude and longitude
@@ -33,8 +34,8 @@ export async function POST(request: Request) {
 
       // Insert the business data
       const businessInsertQuery = `
-        INSERT INTO Businesses (Name, Description, PhoneNumber, Email, Website, Category, CreatedAt, UpdatedAt)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        INSERT INTO Businesses (Name, Description, PhoneNumber, Email, Website, Category, AgentCode, CreatedAt, UpdatedAt)
+        VALUES ($1, $2, $3, $4, $5, $6,$7, NOW(), NOW())
         RETURNING BusinessID
       `;
 
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
         email,
         website,
         category,
+        agentCode || null,
       ]);
       const businessId = businessResult.rows[0].businessid;
 

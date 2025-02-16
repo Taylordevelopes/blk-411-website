@@ -157,9 +157,17 @@ export default function CustomerAddBusiness() {
               },
             },
           ],
+          application_context: {
+            brand_name: "Black 411", // Your business name
+            locale: "en-US",
+            shipping_preference: "NO_SHIPPING",
+            user_action: "PAY_NOW", // Emphasize immediate payment
+            return_url: "https://master.d1z33tci1o905c.amplifyapp.com/success",
+            cancel_url: "https://yourwebsite.com/cancel",
+            landing_page: "BILLING", // Show card form directly (skip PayPal login)
+          },
         }),
       });
-
       const data = await response.json();
 
       if (response.ok && data.id) {
