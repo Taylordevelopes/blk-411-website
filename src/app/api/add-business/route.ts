@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import pool from "@/app/lib/db";
 
-// Function to handle incoming POST request
 export async function POST(request: Request) {
   try {
     const data = await request.json();
+    //Data I am expecting
     const {
       name,
       category,
@@ -22,21 +22,35 @@ export async function POST(request: Request) {
       agentCode,
     } = data;
 
-    // Convert empty strings to null for latitude and longitude
+    //Data either be Present from form or Null
+    const country = "USA";
     const lat = latitude || null;
     const lon = longitude || null;
-    const country = "USA"; // Country is always USA
 
     // Start a transaction
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
 
-      // Insert the business data
+      // 1. Check if agent code is provided and find agent_id
+      let agentId: number | null = null;
+      if (agentCode) {
+        const agentQuery = `
+          SELECT agent_id FROM agents WHERE agent_code = $1
+        `;
+        const agentResult = await client.query(agentQuery, [agentCode]);
+        if (agentResult.rows.length > 0) {
+          agentId = agentResult.rows[0].agent_id;
+        }
+      }
+
+      // 2. Insert the business data
       const businessInsertQuery = `
-        INSERT INTO Businesses (Name, Description, PhoneNumber, Email, Website, Category, AgentCode, CreatedAt, UpdatedAt)
-        VALUES ($1, $2, $3, $4, $5, $6,$7, NOW(), NOW())
-        RETURNING BusinessID
+        INSERT INTO businesses 
+          (name, description, phone_number, email, website, category, agent_id, created_at, updated_at)
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        RETURNING business_id
       `;
 
       const businessResult = await client.query(businessInsertQuery, [
@@ -46,21 +60,22 @@ export async function POST(request: Request) {
         email,
         website,
         category,
-        agentCode || null,
+        agentId,
       ]);
-      const businessId = businessResult.rows[0].businessid;
+      const businessId = businessResult.rows[0].business_id;
 
-      // Insert the address data
+      // 3. Insert the address data
       const addressInsertQuery = `
-        INSERT INTO Addresses (BusinessID, Street, City, State, PostalCode, Country, Latitude, Longitude, Location, CreatedAt, UpdatedAt)
-        VALUES ($1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, 
+        INSERT INTO addresses 
+          (business_id, street, city, state, postal_code, country, latitude, longitude, location, created_at, updated_at)
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, $8, 
           CASE 
             WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-            THEN ST_SetSRID(ST_MakePoint($8::double precision, $7::double precision), 4326)
-            ELSE NULL
+            THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
+            ELSE NULL 
           END, NOW(), NOW())
       `;
-
       await client.query(addressInsertQuery, [
         businessId,
         street,
@@ -72,29 +87,29 @@ export async function POST(request: Request) {
         lon,
       ]);
 
-      // Insert tags
+      // 4. Insert tags into Tags and BusinessTags tables
       const tagInsertQuery = `
-        INSERT INTO Tags (TagName, CreatedAt)
+        INSERT INTO tags (tag_name, created_at)
         VALUES ($1, NOW())
-        ON CONFLICT (TagName) DO NOTHING
-        RETURNING TagID
+        ON CONFLICT (tag_name) DO NOTHING
+        RETURNING tag_id
       `;
+
       const businessTagInsertQuery = `
-        INSERT INTO BusinessTags (BusinessID, TagID, CreatedAt)
+        INSERT INTO business_tags (business_id, tag_id, created_at)
         VALUES ($1, $2, NOW())
       `;
 
       for (const tag of tags.split(",")) {
         const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
         const tagId =
-          tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null;
-
+          tagResult.rows.length > 0 ? tagResult.rows[0].tag_id : null;
         if (tagId) {
           await client.query(businessTagInsertQuery, [businessId, tagId]);
         }
       }
 
-      // Commit transaction
+      // 5. Commit the transaction
       await client.query("COMMIT");
 
       return NextResponse.json(
