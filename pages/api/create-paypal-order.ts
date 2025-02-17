@@ -2,15 +2,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const PAYPAL_API = "https://api-m.sandbox.paypal.com";
 
-interface PurchaseUnit {
-  amount: {
-    currency_code: string;
-    value: string;
-  };
-  reference_id?: string;
-  description?: string;
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
