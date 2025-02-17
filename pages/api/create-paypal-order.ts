@@ -23,7 +23,7 @@ export default async function handler(
   const { purchase_units } = req.body;
 
   try {
-    // Step 1: Get PayPal Access Token
+    // Get PayPal Access Token
     const tokenResponse = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
       method: "POST",
       headers: {
@@ -36,24 +36,16 @@ export default async function handler(
     });
 
     const tokenData = await tokenResponse.json();
-
     if (!tokenResponse.ok) {
       console.error("❌ PayPal Token Error:", tokenData);
       throw new Error(
-        `Failed to retrieve PayPal token: ${
-          tokenData.error_description || tokenData.error
-        }`
+        tokenData.error_description || "Failed to retrieve PayPal token"
       );
     }
 
     const accessToken = tokenData.access_token;
-    if (!accessToken) {
-      throw new Error("PayPal token is missing");
-    }
 
-    console.log("✅ PayPal Access Token received");
-
-    // Step 2: Create PayPal Order
+    // Create PayPal Order
     const orderResponse = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
       headers: {
@@ -62,36 +54,18 @@ export default async function handler(
       },
       body: JSON.stringify({
         intent: "CAPTURE",
-        purchase_units: purchase_units.map((unit: PurchaseUnit) => ({
-          ...unit,
-          amount: {
-            currency_code: unit.amount.currency_code || "USD",
-            value: unit.amount.value || "20.00",
-          },
-        })),
-        application_context: {
-          brand_name: "Black 411",
-          landing_page: "BILLING",
-          user_action: "PAY_NOW",
-          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/confirmation`,
-          cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/cancel`,
-        },
+        purchase_units: purchase_units, // Only pass purchase_units (frontend sends full)
       }),
     });
 
     const orderData = await orderResponse.json();
-
     if (!orderResponse.ok) {
       console.error("❌ PayPal Order Error:", orderData);
-      throw new Error(
-        `Failed to create PayPal order: ${
-          orderData.message || JSON.stringify(orderData)
-        }`
-      );
+      throw new Error(orderData.message || "Failed to create PayPal order");
     }
 
-    console.log("✅ PayPal Order Created:", orderData);
-    return res.status(200).json(orderData);
+    // Return PayPal Order ID to Frontend
+    res.status(200).json(orderData);
   } catch (err) {
     console.error("❌ PayPal Order Creation Failed:", err);
     return res.status(500).json({
