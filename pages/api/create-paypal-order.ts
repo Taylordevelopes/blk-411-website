@@ -11,6 +11,16 @@ export default async function handler(
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
+  console.log("Environment Variables in API Route:");
+  console.log("PAYPAL_CLIENT_ID:", process.env.PAYPAL_CLIENT_ID);
+  console.log("PAYPAL_SECRET:", process.env.PAYPAL_SECRET);
+
+  if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_SECRET) {
+    return res
+      .status(500)
+      .json({ error: "PayPal API credentials are missing" });
+  }
+
   const { purchase_units } = req.body;
 
   try {
@@ -45,7 +55,7 @@ export default async function handler(
       },
       body: JSON.stringify({
         intent: "CAPTURE",
-        purchase_units: purchase_units, // Only pass purchase_units (frontend sends full)
+        purchase_units: purchase_units,
       }),
     });
 
