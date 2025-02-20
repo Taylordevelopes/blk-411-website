@@ -164,7 +164,7 @@ export default function CustomerAddBusiness() {
             user_action: "PAY_NOW", // Emphasize immediate payment
             return_url: "https://master.d1z33tci1o905c.amplifyapp.com/success",
             cancel_url: "https://yourwebsite.com/cancel",
-            landing_page: "BILLING", // Show card form directly (skip PayPal login)
+            landing_page: "GUEST_CHECKOUT",
           },
         }),
       });
