@@ -13,6 +13,7 @@ import {
 import { FaQuestionCircle } from "react-icons/fa";
 import { geocodeAddress } from "../utils/geocodeService";
 import Image from "next/image";
+import { STATES } from "../utils/statesList";
 
 type FormData = {
   name: string;
@@ -345,14 +346,19 @@ export default function CustomerAddBusiness() {
 
             <Form.Group className="mb-3" controlId="addressState">
               <Form.Label>State</Form.Label>
-              <Form.Control
-                type="text"
+              <Form.Select
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                placeholder="Enter state"
                 required
-              />
+              >
+                <option value="">Select a state</option>
+                {STATES.map((state) => (
+                  <option key={state.code} value={state.name}>
+                    {state.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="addressPostalCode">
