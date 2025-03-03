@@ -4,7 +4,8 @@ import pool from "@/app/lib/db";
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    //Data I am expecting
+
+    // Extracting Data
     const {
       name,
       category,
@@ -22,36 +23,34 @@ export async function POST(request: Request) {
       agentCode,
     } = data;
 
-    //Data either be Present from form or Null
+    // Default values
     const country = "USA";
     const lat = latitude || null;
     const lon = longitude || null;
 
-    // Start a transaction
+    // Start database transaction
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
 
-      // 1. Check if agent code is provided and find agent_id
+      // 1. Retrieve `agentid` if `agentCode` exists
       let agentId: number | null = null;
       if (agentCode) {
-        const agentQuery = `
-          SELECT agent_id FROM agents WHERE agent_code = $1
-        `;
+        const agentQuery = `SELECT agentid FROM agents WHERE agent_code = $1`;
         const agentResult = await client.query(agentQuery, [agentCode]);
         if (agentResult.rows.length > 0) {
-          agentId = agentResult.rows[0].agent_id;
+          agentId = agentResult.rows[0].agentid;
         }
       }
 
-      // 2. Insert the business data
+      // 2. Insert business record
       const businessInsertQuery = `
-      INSERT INTO businesses 
-        (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
-      VALUES 
-        ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-      RETURNING businessid;
-    `;
+        INSERT INTO businesses 
+          (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+        RETURNING businessid;
+      `;
 
       const businessResult = await client.query(businessInsertQuery, [
         name,
@@ -62,21 +61,22 @@ export async function POST(request: Request) {
         category,
         agentId,
       ]);
-      const businessId = businessResult.rows[0].business_id;
+      const businessId = businessResult.rows[0].businessid; // ✅ Corrected access
 
-      // 3. Insert the address data
+      // 3. Insert address record
       const addressInsertQuery = `
-          INSERT INTO addresses 
-            (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
-          VALUES 
-            ($1, $2, $3, $4, $5, $6, $7, $8, 
-            CASE 
-              WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-              THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
-              ELSE NULL 
-            END, NOW(), NOW())
-          RETURNING addressid;
-        `;
+        INSERT INTO addresses 
+          (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
+        VALUES 
+          ($1, $2, $3, $4, $5, $6, $7, $8, 
+          CASE 
+            WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
+            THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
+            ELSE NULL 
+          END, NOW(), NOW())
+        RETURNING addressid;
+      `;
+
       await client.query(addressInsertQuery, [
         businessId,
         street,
@@ -88,25 +88,27 @@ export async function POST(request: Request) {
         lon,
       ]);
 
-      // 4. Insert tags into Tags and BusinessTags tables
-      const tagInsertQuery = `
-      INSERT INTO tags (tagname, createdat)
-      VALUES ($1, NOW())
-      ON CONFLICT (tagname) DO NOTHING
-      RETURNING tagid;
-    `;
+      // 4. Insert tags & associate with business
+      if (tags && Array.isArray(tags)) {
+        const tagInsertQuery = `
+          INSERT INTO tags (tagname, createdat)
+          VALUES ($1, NOW())
+          ON CONFLICT (tagname) DO NOTHING
+          RETURNING tagid;
+        `;
 
-      const businessTagInsertQuery = `
-    INSERT INTO businesstags (businessid, tagid, createdat)
-    VALUES ($1, $2, NOW());
-  `;
+        const businessTagInsertQuery = `
+          INSERT INTO businesstags (businessid, tagid, createdat)
+          VALUES ($1, $2, NOW());
+        `;
 
-      for (const tag of tags.split(",")) {
-        const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
-        const tagId =
-          tagResult.rows.length > 0 ? tagResult.rows[0].tag_id : null;
-        if (tagId) {
-          await client.query(businessTagInsertQuery, [businessId, tagId]);
+        for (const tag of tags) {
+          const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
+          const tagId =
+            tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null; // ✅ Corrected access
+          if (tagId) {
+            await client.query(businessTagInsertQuery, [businessId, tagId]);
+          }
         }
       }
 

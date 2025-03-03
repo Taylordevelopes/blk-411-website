@@ -18,10 +18,10 @@ import { STATES } from "../utils/statesList";
 type FormData = {
   name: string;
   category: string;
-  description: string;
+  description?: string;
   phoneNumber: string;
   email: string;
-  website: string;
+  website?: string;
   street: string;
   city: string;
   state: string;
@@ -30,7 +30,7 @@ type FormData = {
   latitude: number | "";
   longitude: number | "";
   tags: string;
-  agentCode: string;
+  agentCode?: string;
 };
 
 export default function CustomerAddBusiness() {
@@ -202,10 +202,20 @@ export default function CustomerAddBusiness() {
 
       // Step 2: Prepare business data
       const businessData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        phonenumber: formData.phoneNumber,
+        email: formData.email,
+        website: formData.website,
+        category: formData.category,
+        agentid: formData.agentCode,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        postalcode: formData.postalCode,
+        country: "USA",
         latitude,
         longitude,
-        country: "USA", // Default country
       };
 
       console.log("Submitting business data directly:", businessData);
@@ -223,7 +233,9 @@ export default function CustomerAddBusiness() {
         // Redirect user to confirmation page
         window.location.href = "/confirmation";
       } else {
-        throw new Error("Failed to add business.");
+        const errorData = await response.json();
+        console.error("Error adding business:", errorData);
+        alert("An error occurred: " + errorData.message);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
