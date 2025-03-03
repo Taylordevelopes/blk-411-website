@@ -208,7 +208,10 @@ export default function CustomerAddBusiness() {
         email: formData.email,
         website: formData.website,
         category: formData.category,
-        agentid: formData.agentCode,
+        agentid:
+          formData.agentCode && formData.agentCode.trim() !== ""
+            ? formData.agentCode
+            : null,
         street: formData.street,
         city: formData.city,
         state: formData.state,

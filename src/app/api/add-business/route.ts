@@ -35,12 +35,17 @@ export async function POST(request: Request) {
 
       // 1. Retrieve `agentid` if `agentCode` exists
       let agentId: number | null = null;
-      if (agentCode) {
+      if (agentCode && agentCode.trim() !== "") {
         const agentQuery = `SELECT agentid FROM agents WHERE agent_code = $1`;
         const agentResult = await client.query(agentQuery, [agentCode]);
         if (agentResult.rows.length > 0) {
           agentId = agentResult.rows[0].agentid;
         }
+      }
+
+      // 2. Ensure agentId is NULL if not found
+      if (!agentId) {
+        agentId = null; // ✅ Ensures NULL is stored instead of empty string
       }
 
       // 2. Insert business record
