@@ -5,55 +5,49 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
-    // Extracting Data
+    // Ensure correct data structure
     const {
       name,
       category,
-      description,
+      description = null,
       phoneNumber,
       email,
-      website,
+      website = null,
       street,
       city,
       state,
       postalCode,
       latitude,
       longitude,
-      tags,
+      tags = [],
       agentCode,
     } = data;
 
-    // Default values
     const country = "USA";
     const lat = latitude || null;
     const lon = longitude || null;
 
-    // Start database transaction
+    // Get a database connection
     const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
 
-      // 1. Retrieve `agentid` if `agentCode` exists
+    try {
+      await client.query("BEGIN"); // Start transaction
+
+      // 1️⃣ Retrieve agent ID if an agent code is provided
       let agentId: number | null = null;
       if (agentCode && agentCode.trim() !== "") {
         const agentQuery = `SELECT agentid FROM agents WHERE agent_code = $1`;
         const agentResult = await client.query(agentQuery, [agentCode]);
+
         if (agentResult.rows.length > 0) {
           agentId = agentResult.rows[0].agentid;
         }
       }
 
-      // 2. Ensure agentId is NULL if not found
-      if (!agentId) {
-        agentId = null; // ✅ Ensures NULL is stored instead of empty string
-      }
-
-      // 2. Insert business record
+      // 2️⃣ Insert business
       const businessInsertQuery = `
-        INSERT INTO businesses 
-          (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
-        VALUES 
-          ($1, $2, $3, $4, $5, $6, $7::INTEGER, NOW(), NOW())
+        INSERT INTO businesses (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
         RETURNING businessid;
       `;
 
@@ -64,22 +58,20 @@ export async function POST(request: Request) {
         email,
         website,
         category,
-        agentId,
+        agentId, // Can be NULL if no agentCode found
       ]);
-      const businessId = businessResult.rows[0].businessid; // ✅ Corrected access
 
-      // 3. Insert address record
+      const businessId = businessResult.rows[0].businessid;
+
+      // 3️⃣ Insert address
       const addressInsertQuery = `
-        INSERT INTO addresses 
-          (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
-        VALUES 
-          ($1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, 
+        INSERT INTO addresses (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
+        VALUES ($1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, 
           CASE 
             WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-            THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
+            THEN ST_SetSRID(ST_MakePoint($8::double precision, $7::double precision), 4326)
             ELSE NULL 
-          END, NOW(), NOW())
-        RETURNING addressid;
+          END, NOW(), NOW());
       `;
 
       await client.query(addressInsertQuery, [
@@ -93,8 +85,8 @@ export async function POST(request: Request) {
         lon,
       ]);
 
-      // 4. Insert tags & associate with business
-      if (tags && Array.isArray(tags)) {
+      // 4️⃣ Insert tags & associate with business
+      if (tags.length > 0) {
         const tagInsertQuery = `
           INSERT INTO tags (tagname, createdat)
           VALUES ($1, NOW())
@@ -110,14 +102,15 @@ export async function POST(request: Request) {
         for (const tag of tags) {
           const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
           const tagId =
-            tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null; // ✅ Corrected access
+            tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null;
+
           if (tagId) {
             await client.query(businessTagInsertQuery, [businessId, tagId]);
           }
         }
       }
 
-      // 5. Commit the transaction
+      // 5️⃣ Commit transaction
       await client.query("COMMIT");
 
       return NextResponse.json(
@@ -128,7 +121,7 @@ export async function POST(request: Request) {
       await client.query("ROLLBACK");
       throw err;
     } finally {
-      client.release();
+      client.release(); // Release DB connection
     }
   } catch (err) {
     console.error("Error adding business:", err);

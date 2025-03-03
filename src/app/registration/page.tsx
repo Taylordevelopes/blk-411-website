@@ -35,6 +35,7 @@ type FormData = {
 
 export default function CustomerAddBusiness() {
   const [agentCode, setAgentCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // ✅ Extract the agent code from URL only on client-side
   useEffect(() => {
@@ -190,6 +191,7 @@ export default function CustomerAddBusiness() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       // Step 1: Get latitude and longitude using Google Geocoding
@@ -200,49 +202,65 @@ export default function CustomerAddBusiness() {
         formData.postalCode
       );
 
-      // Step 2: Prepare business data
+      // Step 2: Prepare structured data for API submission
       const businessData = {
         name: formData.name,
-        description: formData.description,
-        phonenumber: formData.phoneNumber,
-        email: formData.email,
-        website: formData.website,
         category: formData.category,
-        agentid:
+        description: formData.description || null,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        website: formData.website || null,
+        agentCode:
           formData.agentCode && formData.agentCode.trim() !== ""
             ? formData.agentCode
-            : null,
+            : null, // Ensure NULL if empty
+      };
+
+      const addressData = {
         street: formData.street,
         city: formData.city,
-        state: formData.state,
-        postalcode: formData.postalCode,
+        state: formData.state, // ✅ State dropdown selection handled
+        postalCode: formData.postalCode,
         country: "USA",
         latitude,
         longitude,
       };
 
-      console.log("Submitting business data directly:", businessData);
+      const tagsData = formData.tags
+        ? formData.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag !== "")
+        : [];
 
-      // Step 3: Send business data directly to the API
+      console.log("Submitting business data:", {
+        businessData,
+        addressData,
+        tagsData,
+      });
+
+      // Step 3: Send structured data to API
       const response = await fetch("/api/add-business", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(businessData),
+        body: JSON.stringify({ businessData, addressData, tagsData }),
       });
 
       if (response.ok) {
         console.log("Business added successfully!");
 
-        // Redirect user to confirmation page
+        // Redirect to confirmation page
         window.location.href = "/confirmation";
       } else {
         const errorData = await response.json();
         console.error("Error adding business:", errorData);
-        alert("An error occurred: " + errorData.message);
+        alert(`An error occurred: ${errorData.message}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -494,8 +512,13 @@ export default function CustomerAddBusiness() {
             </Form.Group>
 
             {/* Submit Button */}
-            <Button variant="primary" type="submit" className="w-100">
-              Register Business
+            <Button
+              variant="primary"
+              type="submit"
+              className="w-100"
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Add Business"}
             </Button>
           </Form>
         </Col>
