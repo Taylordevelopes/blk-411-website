@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         INSERT INTO businesses 
           (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
         VALUES 
-          ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+          ($1, $2, $3, $4, $5, $6, $7::INTEGER, NOW(), NOW())
         RETURNING businessid;
       `;
 
