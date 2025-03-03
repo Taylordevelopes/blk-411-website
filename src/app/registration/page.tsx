@@ -122,6 +122,72 @@ export default function CustomerAddBusiness() {
     setErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
   };
 
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     // Step 1: Get latitude and longitude using Google Geocoding
+  //     const { latitude, longitude } = await geocodeAddress(
+  //       formData.street,
+  //       formData.city,
+  //       formData.state,
+  //       formData.postalCode
+  //     );
+
+  //     // Step 2: Prepare business data
+  //     const businessData = {
+  //       ...formData,
+  //       latitude,
+  //       longitude,
+  //       country: "USA", // Default country
+  //     };
+
+  //     console.log("Submitting business data:", businessData);
+
+  //     // Step 3: Call your API to create PayPal order
+  //     const response = await fetch("/api/create-paypal-order", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         purchase_units: [
+  //           {
+  //             reference_id: "business_registration",
+  //             amount: {
+  //               value: "76.00",
+  //               currency_code: "USD",
+  //             },
+  //           },
+  //         ],
+  //         application_context: {
+  //           brand_name: "Black 411", // Your business name
+  //           locale: "en-US",
+  //           shipping_preference: "NO_SHIPPING",
+  //           user_action: "PAY_NOW", // Emphasize immediate payment
+  //           return_url: "https://master.d1z33tci1o905c.amplifyapp.com/success",
+  //           cancel_url: "https://yourwebsite.com/cancel",
+  //           landing_page: "GUEST_CHECKOUT",
+  //         },
+  //       }),
+  //     });
+  //     const data = await response.json();
+
+  //     if (response.ok && data.id) {
+  //       console.log("Redirecting to PayPal with order ID:", data.id);
+
+  //       // Store business data temporarily in sessionStorage for post-payment processing
+  //       sessionStorage.setItem("businessData", JSON.stringify(businessData));
+
+  //       // Redirect to PayPal checkout page
+  //       window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`;
+  //     } else {
+  //       throw new Error("Failed to create PayPal order.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error submitting form:", error);
+  //     alert("An error occurred. Please try again.");
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -142,45 +208,22 @@ export default function CustomerAddBusiness() {
         country: "USA", // Default country
       };
 
-      console.log("Submitting business data:", businessData);
+      console.log("Submitting business data directly:", businessData);
 
-      // Step 3: Call your API to create PayPal order
-      const response = await fetch("/api/create-paypal-order", {
+      // Step 3: Send business data directly to the API
+      const response = await fetch("/api/add-business", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          purchase_units: [
-            {
-              reference_id: "business_registration",
-              amount: {
-                value: "76.00",
-                currency_code: "USD",
-              },
-            },
-          ],
-          application_context: {
-            brand_name: "Black 411", // Your business name
-            locale: "en-US",
-            shipping_preference: "NO_SHIPPING",
-            user_action: "PAY_NOW", // Emphasize immediate payment
-            return_url: "https://master.d1z33tci1o905c.amplifyapp.com/success",
-            cancel_url: "https://yourwebsite.com/cancel",
-            landing_page: "GUEST_CHECKOUT",
-          },
-        }),
+        body: JSON.stringify(businessData),
       });
-      const data = await response.json();
 
-      if (response.ok && data.id) {
-        console.log("Redirecting to PayPal with order ID:", data.id);
+      if (response.ok) {
+        console.log("Business added successfully!");
 
-        // Store business data temporarily in sessionStorage for post-payment processing
-        sessionStorage.setItem("businessData", JSON.stringify(businessData));
-
-        // Redirect to PayPal checkout page
-        window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${data.id}`;
+        // Redirect user to confirmation page
+        window.location.href = "/confirmation";
       } else {
-        throw new Error("Failed to create PayPal order.");
+        throw new Error("Failed to add business.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
