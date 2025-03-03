@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         INSERT INTO addresses 
           (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
         VALUES 
-          ($1, $2, $3, $4, $5, $6, $7, $8, 
+          ($1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, 
           CASE 
             WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
             THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
