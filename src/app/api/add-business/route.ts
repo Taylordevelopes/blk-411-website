@@ -4,6 +4,7 @@ import pool from "@/app/lib/db";
 export async function POST(request: Request) {
   try {
     const data = await request.json();
+    console.log("🚀 Received payload:", JSON.stringify(data, null, 2));
 
     // Ensure correct data structure
     const {
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
       tags = [],
       agentCode,
     } = data;
+
+    console.log("🔹 Extracted Name:", name);
 
     const country = "USA";
     const lat = latitude || null;
