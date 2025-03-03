@@ -46,12 +46,12 @@ export async function POST(request: Request) {
 
       // 2. Insert the business data
       const businessInsertQuery = `
-        INSERT INTO businesses 
-          (name, description, phonenumber, email, website, category, agent_id, created_at, updated_at)
-        VALUES 
-          ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-        RETURNING business_id
-      `;
+      INSERT INTO businesses 
+        (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
+      VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      RETURNING businessid;
+    `;
 
       const businessResult = await client.query(businessInsertQuery, [
         name,
@@ -66,16 +66,17 @@ export async function POST(request: Request) {
 
       // 3. Insert the address data
       const addressInsertQuery = `
-        INSERT INTO addresses 
-          (business_id, street, city, state, postal_code, country, latitude, longitude, location, created_at, updated_at)
-        VALUES 
-          ($1, $2, $3, $4, $5, $6, $7, $8, 
-          CASE 
-            WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-            THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
-            ELSE NULL 
-          END, NOW(), NOW())
-      `;
+          INSERT INTO addresses 
+            (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
+          VALUES 
+            ($1, $2, $3, $4, $5, $6, $7, $8, 
+            CASE 
+              WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
+              THEN ST_SetSRID(ST_MakePoint($8, $7), 4326) 
+              ELSE NULL 
+            END, NOW(), NOW())
+          RETURNING addressid;
+        `;
       await client.query(addressInsertQuery, [
         businessId,
         street,
@@ -89,16 +90,16 @@ export async function POST(request: Request) {
 
       // 4. Insert tags into Tags and BusinessTags tables
       const tagInsertQuery = `
-        INSERT INTO tags (tag_name, created_at)
-        VALUES ($1, NOW())
-        ON CONFLICT (tag_name) DO NOTHING
-        RETURNING tag_id
-      `;
+      INSERT INTO tags (tagname, createdat)
+      VALUES ($1, NOW())
+      ON CONFLICT (tagname) DO NOTHING
+      RETURNING tagid;
+    `;
 
       const businessTagInsertQuery = `
-        INSERT INTO business_tags (business_id, tag_id, created_at)
-        VALUES ($1, $2, NOW())
-      `;
+    INSERT INTO businesstags (businessid, tagid, createdat)
+    VALUES ($1, $2, NOW());
+  `;
 
       for (const tag of tags.split(",")) {
         const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
