@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       // 2. Insert the business data
       const businessInsertQuery = `
         INSERT INTO businesses 
-          (name, description, phone_number, email, website, category, agent_id, created_at, updated_at)
+          (name, description, phonenumber, email, website, category, agent_id, created_at, updated_at)
         VALUES 
           ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
         RETURNING business_id

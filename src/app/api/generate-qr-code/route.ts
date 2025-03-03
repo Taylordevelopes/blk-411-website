@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const referralURL = `https://master.d1z33tci1o905c.amplifyapp.com//registration?ref=${agentCode}`;
+    const referralURL = `https://theblack411.net/registration?ref=${agentCode}`;
     const qrCodeDataURL = await QRCode.toDataURL(referralURL); // Generate QR code as Base64
 
     return NextResponse.json({ qrCode: qrCodeDataURL });

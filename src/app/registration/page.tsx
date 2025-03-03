@@ -351,7 +351,7 @@ export default function CustomerAddBusiness() {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="businessWebsite">
-              <Form.Label>Website</Form.Label>
+              <Form.Label>Website|Social Handles</Form.Label>
               <Form.Control
                 type=""
                 name="website"
