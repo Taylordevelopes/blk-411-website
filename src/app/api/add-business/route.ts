@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "@/app/lib/db";
 
 export async function POST(req: NextRequest) {
-  const client = await pool.connect(); // ✅ Get a client from the pool
+  const client = await pool.connect();
 
   try {
     const body = await req.json();
@@ -35,12 +35,22 @@ export async function POST(req: NextRequest) {
     // ✅ Begin transaction
     await client.query("BEGIN");
 
+    // ✅ Get `agentid` from `agents` using `agentcode`
+    let agentId: number | null = null;
+    if (businessData.agentCode) {
+      const agentResult = await client.query(
+        `SELECT agentid FROM agents WHERE agentcode = $1 LIMIT 1`,
+        [businessData.agentCode]
+      );
+      agentId =
+        agentResult.rows.length > 0 ? agentResult.rows[0].agentid : null;
+    }
+
     // ✅ Insert into `businesses` table
     const businessResult = await client.query(
-      `INSERT INTO businesses (name, category, description, phone_number, email, website, agent_id)
-       VALUES ($1, $2, $3, $4, $5, $6, 
-          (SELECT agent_id FROM agents WHERE agent_code = $7 LIMIT 1)) 
-       RETURNING business_id`,
+      `INSERT INTO businesses (name, category, description, phonenumber, email, website, agentid, status, createdat, updatedat)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', NOW(), NOW()) 
+       RETURNING businessid`,
       [
         businessData.name,
         businessData.category,
@@ -48,16 +58,16 @@ export async function POST(req: NextRequest) {
         businessData.phoneNumber,
         businessData.email,
         businessData.website || null,
-        businessData.agentCode || null,
+        agentId, // ✅ Set `agentid` correctly
       ]
     );
 
-    const businessId = businessResult.rows[0].business_id;
+    const businessId = businessResult.rows[0].businessid;
 
     // ✅ Insert into `addresses` table
     await client.query(
-      `INSERT INTO addresses (business_id, street, city, state, postal_code, country, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      `INSERT INTO addresses (businessid, street, city, state, postalcode, country, latitude, longitude, isprimary, createdat, updatedat)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW(), NOW())`,
       [
         businessId,
         addressData.street,
@@ -70,14 +80,31 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    // ✅ Insert tags if provided
+    // ✅ Handle `tagsData`
     if (tagsData.length > 0) {
-      const tagValues = tagsData
-        .map((tag: string) => `(${businessId}, '${tag}')`)
-        .join(",");
-      await client.query(
-        `INSERT INTO tags (business_id, tag_name) VALUES ${tagValues}`
-      );
+      for (const tag of tagsData) {
+        // Check if tag exists
+        const tagResult = await client.query(
+          `SELECT tagid FROM tags WHERE tagname = $1`,
+          [tag]
+        );
+        let tagId = tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null;
+
+        // If tag doesn't exist, insert new tag
+        if (!tagId) {
+          const newTagResult = await client.query(
+            `INSERT INTO tags (tagname, createdat) VALUES ($1, NOW()) RETURNING tagid`,
+            [tag]
+          );
+          tagId = newTagResult.rows[0].tagid;
+        }
+
+        // Link tag to business in `businesstags`
+        await client.query(
+          `INSERT INTO businesstags (businessid, tagid, createdat) VALUES ($1, $2, NOW())`,
+          [businessId, tagId]
+        );
+      }
     }
 
     // ✅ Commit transaction
@@ -88,10 +115,14 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    await client.query("ROLLBACK"); // ✅ Rollback if any query fails
-    console.error("Error inserting data:", error);
+    await client.query("ROLLBACK");
+    console.error("🚨 Database Insert Error:", error);
+
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      {
+        error: "Internal Server Error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   } finally {
