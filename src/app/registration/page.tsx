@@ -250,7 +250,7 @@ export default function CustomerAddBusiness() {
         console.log("Business added successfully!");
 
         // Redirect to confirmation page
-        window.location.href = "/confirmation";
+        window.location.href = "/success";
       } else {
         const errorData = await response.json();
         console.error("Error adding business:", errorData);
@@ -384,7 +384,7 @@ export default function CustomerAddBusiness() {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="businessWebsite">
-              <Form.Label>Website|Social Handles</Form.Label>
+              <Form.Label>Website or Social Handles</Form.Label>
               <Form.Control
                 type=""
                 name="website"
