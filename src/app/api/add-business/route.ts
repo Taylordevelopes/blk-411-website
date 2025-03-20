@@ -1,136 +1,76 @@
-import { NextResponse } from "next/server";
-import pool from "@/app/lib/db";
+import { NextApiRequest, NextApiResponse } from "next";
+import pool from "../../lib/db";
 
-export async function POST(request: Request) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  const client = await pool.connect(); // ✅ Get a client from the pool
+
   try {
-    const data = await request.json();
-    console.log("🚀 Received payload:", JSON.stringify(data, null, 2));
+    const { businessData, addressData, tagsData } = req.body;
 
-    // Ensure correct data structure
-    const {
-      name,
-      category,
-      description = null,
-      phoneNumber,
-      email,
-      website = null,
-      street,
-      city,
-      state,
-      postalCode,
-      latitude,
-      longitude,
-      tags = [],
-      agentCode,
-    } = data;
+    // ✅ Begin transaction to ensure consistency across multiple inserts
+    await client.query("BEGIN");
 
-    console.log("🔹 Extracted Name:", name);
-
-    const country = "USA";
-    const lat = latitude || null;
-    const lon = longitude || null;
-
-    // Get a database connection
-    const client = await pool.connect();
-
-    try {
-      await client.query("BEGIN"); // Start transaction
-
-      // 1️⃣ Retrieve agent ID if an agent code is provided
-      let agentId: number | null = null;
-      if (agentCode && agentCode.trim() !== "") {
-        const agentQuery = `SELECT agentid FROM agents WHERE agent_code = $1`;
-        const agentResult = await client.query(agentQuery, [agentCode]);
-
-        if (agentResult.rows.length > 0) {
-          agentId = agentResult.rows[0].agentid;
-        }
-      }
-
-      // 2️⃣ Insert business
-      const businessInsertQuery = `
-        INSERT INTO businesses (name, description, phonenumber, email, website, category, agentid, createdat, updatedat)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-        RETURNING businessid;
-      `;
-
-      const businessResult = await client.query(businessInsertQuery, [
-        name,
-        description,
-        phoneNumber,
-        email,
-        website,
-        category,
-        agentId, // Can be NULL if no agentCode found
-      ]);
-
-      const businessId = businessResult.rows[0].businessid;
-
-      // 3️⃣ Insert address
-      const addressInsertQuery = `
-        INSERT INTO addresses (businessid, street, city, state, postalcode, country, latitude, longitude, location, createdat, updatedat)
-        VALUES ($1, $2, $3, $4, $5, $6, $7::double precision, $8::double precision, 
-          CASE 
-            WHEN $7 IS NOT NULL AND $8 IS NOT NULL 
-            THEN ST_SetSRID(ST_MakePoint($8::double precision, $7::double precision), 4326)
-            ELSE NULL 
-          END, NOW(), NOW());
-      `;
-
-      await client.query(addressInsertQuery, [
-        businessId,
-        street,
-        city,
-        state,
-        postalCode,
-        country,
-        lat,
-        lon,
-      ]);
-
-      // 4️⃣ Insert tags & associate with business
-      if (tags.length > 0) {
-        const tagInsertQuery = `
-          INSERT INTO tags (tagname, createdat)
-          VALUES ($1, NOW())
-          ON CONFLICT (tagname) DO NOTHING
-          RETURNING tagid;
-        `;
-
-        const businessTagInsertQuery = `
-          INSERT INTO businesstags (businessid, tagid, createdat)
-          VALUES ($1, $2, NOW());
-        `;
-
-        for (const tag of tags) {
-          const tagResult = await client.query(tagInsertQuery, [tag.trim()]);
-          const tagId =
-            tagResult.rows.length > 0 ? tagResult.rows[0].tagid : null;
-
-          if (tagId) {
-            await client.query(businessTagInsertQuery, [businessId, tagId]);
-          }
-        }
-      }
-
-      // 5️⃣ Commit transaction
-      await client.query("COMMIT");
-
-      return NextResponse.json(
-        { message: "Business added successfully!" },
-        { status: 201 }
-      );
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release(); // Release DB connection
-    }
-  } catch (err) {
-    console.error("Error adding business:", err);
-    return NextResponse.json(
-      { message: "Failed to add business", error: (err as Error).message },
-      { status: 500 }
+    // ✅ Insert business into `businesses` table
+    const businessResult = await client.query(
+      `INSERT INTO businesses (name, category, description, phone_number, email, website, agent_id)
+       VALUES ($1, $2, $3, $4, $5, $6, 
+          (SELECT agent_id FROM agents WHERE agent_code = $7 LIMIT 1)) 
+       RETURNING business_id`,
+      [
+        businessData.name,
+        businessData.category,
+        businessData.description || null,
+        businessData.phoneNumber,
+        businessData.email,
+        businessData.website || null,
+        businessData.agentCode || null, // Ensure null if empty
+      ]
     );
+
+    const businessId = businessResult.rows[0].business_id;
+
+    // ✅ Insert address into `addresses` table
+    await client.query(
+      `INSERT INTO addresses (business_id, street, city, state, postal_code, country, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        businessId,
+        addressData.street,
+        addressData.city,
+        addressData.state,
+        addressData.postalCode,
+        addressData.country,
+        addressData.latitude,
+        addressData.longitude,
+      ]
+    );
+
+    // ✅ Insert tags if provided
+    if (tagsData.length > 0) {
+      const tagValues = tagsData
+        .map((tag: string) => `(${businessId}, '${tag}')`)
+        .join(",");
+      await client.query(
+        `INSERT INTO tags (business_id, tag_name) VALUES ${tagValues}`
+      );
+    }
+
+    // ✅ Commit transaction
+    await client.query("COMMIT");
+
+    return res.status(201).json({ message: "Business added successfully!" });
+  } catch (error) {
+    await client.query("ROLLBACK"); // ✅ Rollback if any query fails
+    console.error("Error inserting data:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    client.release(); // ✅ Always release the client back to the pool
   }
 }
