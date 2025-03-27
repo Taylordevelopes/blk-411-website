@@ -15,6 +15,7 @@ import {
 function Footer() {
   return (
     <footer
+      id="contact-footer"
       className="position-relative bg-light py-5 d-flex justify-content-center align-items-center"
       style={{
         backgroundImage: "url('/footerimage.jpg')",

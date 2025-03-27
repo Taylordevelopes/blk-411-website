@@ -40,7 +40,7 @@ function Header() {
             <Nav.Link href="/aboutus">About Us</Nav.Link>
             <Nav.Link href="/features">Our Features</Nav.Link>
             <Nav.Link href="/registration">Register Your Business</Nav.Link>
-            <Nav.Link href="/contact">Contact</Nav.Link>
+            <Nav.Link href="#contact-footer">Contact Us</Nav.Link>
           </Nav>
 
           {/* "Black 411 Agent" button on the right */}
