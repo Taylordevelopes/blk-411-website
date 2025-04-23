@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const PAYPAL_API = "https://api-m.paypal.com";
+const PAYPAL_API = "https://api-m.paypal.com"; // Live endpoint
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,67 +11,79 @@ export default async function handler(
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  console.log("Environment Variables in API Route:");
-  console.log("PAYPAL_CLIENT_ID:", process.env.PAYPAL_CLIENT_ID);
-  console.log("PAYPAL_SECRET:", process.env.PAYPAL_SECRET);
+  const clientId = process.env.PAYPAL_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_SECRET;
 
-  if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_SECRET) {
-    return res
-      .status(500)
-      .json({ error: "PayPal API credentials are missing" });
+  console.log("🧪 ENV CHECK: PAYPAL_CLIENT_ID:", !!clientId);
+  console.log("🧪 ENV CHECK: PAYPAL_SECRET:", !!clientSecret);
+
+  if (!clientId || !clientSecret) {
+    return res.status(500).json({
+      error: "PayPal API credentials are missing",
+    });
   }
 
-  const { purchase_units } = req.body;
+  const { purchase_units, application_context } = req.body;
+
+  if (!purchase_units || !Array.isArray(purchase_units)) {
+    return res.status(400).json({ error: "Missing or invalid purchase_units" });
+  }
 
   try {
-    // Get PayPal Access Token
-    const tokenResponse = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+    // Step 1: Get access token from PayPal
+    const authHeader = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64"
+    );
+
+    const tokenRes = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
-        ).toString("base64")}`,
+        Authorization: `Basic ${authHeader}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: "grant_type=client_credentials",
     });
 
-    const tokenData = await tokenResponse.json();
-    if (!tokenResponse.ok) {
-      console.error("❌ PayPal Token Error:", tokenData);
-      throw new Error(
-        tokenData.error_description || "Failed to retrieve PayPal token"
-      );
+    const tokenData = await tokenRes.json();
+    console.log("🔐 Token Response:", tokenData);
+
+    if (!tokenRes.ok || !tokenData.access_token) {
+      console.error("❌ Failed to get token:", tokenData);
+      throw new Error(tokenData.error_description || "Token request failed");
     }
 
     const accessToken = tokenData.access_token;
 
-    // Create PayPal Order
-    const orderResponse = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
+    // Step 2: Create PayPal order
+    const orderBody = {
+      intent: "CAPTURE",
+      purchase_units,
+      ...(application_context && { application_context }),
+    };
+
+    const orderRes = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        intent: "CAPTURE",
-        purchase_units: purchase_units,
-      }),
+      body: JSON.stringify(orderBody),
     });
 
-    const orderData = await orderResponse.json();
-    if (!orderResponse.ok) {
-      console.error("❌ PayPal Order Error:", orderData);
-      throw new Error(orderData.message || "Failed to create PayPal order");
+    const orderData = await orderRes.json();
+    console.log("🧾 Order Response:", orderData);
+
+    if (!orderRes.ok || !orderData.id) {
+      console.error("❌ Failed to create order:", orderData);
+      throw new Error(orderData.message || "Order creation failed");
     }
 
-    // Return PayPal Order ID to Frontend
-    res.status(200).json(orderData);
-  } catch (err) {
+    return res.status(200).json(orderData);
+  } catch (err: unknown) {
     console.error("❌ PayPal Order Creation Failed:", err);
     return res.status(500).json({
-      error: "Failed to create PayPal order",
-      details: (err as Error).message,
+      error: "PayPal order creation failed",
+      details: err instanceof Error ? err.message : "Unknown error",
     });
   }
 }
