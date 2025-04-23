@@ -284,7 +284,7 @@ export default function CustomerAddBusiness() {
             user_action: "PAY_NOW",
             return_url: "https://theblack411.net/success",
             cancel_url: "https://theblack411.net/cancel",
-            landing_page: "GUEST_CHECKOUT",
+            landing_page: "LOGIN",
           },
         }),
       });
