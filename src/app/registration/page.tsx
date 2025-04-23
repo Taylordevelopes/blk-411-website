@@ -272,7 +272,7 @@ export default function CustomerAddBusiness() {
             {
               reference_id: "business_registration",
               amount: {
-                value: "76.00",
+                value: "1.00",
                 currency_code: "USD",
               },
             },
@@ -293,7 +293,7 @@ export default function CustomerAddBusiness() {
 
       if (paypalRes.ok && paypalData.id) {
         console.log("Redirecting to PayPal with order ID:", paypalData.id);
-        window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalData.id}`;
+        window.location.href = `https://www.paypal.com/checkoutnow?token=${paypalData.id}`;
       } else {
         throw new Error("Failed to create PayPal order.");
       }

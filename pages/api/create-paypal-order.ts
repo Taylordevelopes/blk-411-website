@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const PAYPAL_API = "https://api-m.sandbox.paypal.com";
+const PAYPAL_API = "https://api-m.paypal.com";
 
 export default async function handler(
   req: NextApiRequest,

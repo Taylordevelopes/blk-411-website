@@ -15,7 +15,7 @@ export default function CancelPage() {
         processed. If this was a mistake, you can return to the registration
         form and try again.
       </p>
-      <a href="/register" className="btn btn-primary">
+      <a href="/registration" className="btn btn-primary">
         Return to Registration
       </a>
     </Container>
