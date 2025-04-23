@@ -60,7 +60,7 @@ export default function SuccessPage() {
 
       {/* Feel-good Statement */}
       <p className="text-muted" style={{ maxWidth: "600px" }}>
-        You've just taken an important step towards empowering Black-owned
+        You&apos;ve just taken an important step towards empowering Black-owned
         businesses and strengthening our national community. Welcome to The
         Black 411 family!
       </p>

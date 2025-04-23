@@ -297,9 +297,14 @@ export default function CustomerAddBusiness() {
       } else {
         throw new Error("Failed to create PayPal order.");
       }
-    } catch (error: any) {
-      console.error("Submission error:", error);
-      alert(`An error occurred: ${error.message || "Unknown error"}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Submission error:", error.message);
+        alert(`An error occurred: ${error.message}`);
+      } else {
+        console.error("Unknown submission error occurred.");
+        alert("An unknown error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
