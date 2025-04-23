@@ -194,7 +194,7 @@ export default function CustomerAddBusiness() {
     setLoading(true);
 
     try {
-      // Step 1: Geocode address
+      // Step 1: Get latitude and longitude using Google Geocoding
       const { latitude, longitude } = await geocodeAddress(
         formData.street,
         formData.city,
@@ -202,7 +202,7 @@ export default function CustomerAddBusiness() {
         formData.postalCode
       );
 
-      // Step 2: Prepare data
+      // Step 2: Prepare structured data for API submission
       const businessData = {
         name: formData.name,
         category: formData.category,
@@ -213,14 +213,13 @@ export default function CustomerAddBusiness() {
         agentCode:
           formData.agentCode && formData.agentCode.trim() !== ""
             ? formData.agentCode
-            : null,
-        status: "Pending",
+            : null, // Ensure NULL if empty
       };
 
       const addressData = {
         street: formData.street,
         city: formData.city,
-        state: formData.state,
+        state: formData.state, // ✅ State dropdown selection handled
         postalCode: formData.postalCode,
         country: "USA",
         latitude,
@@ -240,71 +239,26 @@ export default function CustomerAddBusiness() {
         tagsData,
       });
 
-      // Step 3: Save to your API first
-      const apiRes = await fetch("/api/add-business", {
+      // Step 3: Send structured data to API
+      const response = await fetch("/api/add-business", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ businessData, addressData, tagsData }),
       });
 
-      if (!apiRes.ok) {
-        const errorData = await apiRes.json();
-        throw new Error(errorData.message || "Failed to add business.");
-      }
+      if (response.ok) {
+        console.log("Business added successfully!");
 
-      const { businessId } = await apiRes.json(); // 🔥 Get returned business ID
-
-      // ✅ Store businessId for status update later
-      localStorage.setItem("businessId", businessId);
-
-      // Optional: Store full data if needed post-payment
-      sessionStorage.setItem(
-        "businessData",
-        JSON.stringify({ businessData, addressData, tagsData })
-      );
-
-      // Step 4: Create PayPal order
-      const paypalRes = await fetch("/api/create-paypal-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          purchase_units: [
-            {
-              reference_id: "business_registration",
-              amount: {
-                value: "76.00",
-                currency_code: "USD",
-              },
-            },
-          ],
-          application_context: {
-            brand_name: "Black 411",
-            locale: "en-US",
-            shipping_preference: "NO_SHIPPING",
-            user_action: "PAY_NOW",
-            return_url: "https://master.d1z33tci1o905c.amplifyapp.com/success",
-            cancel_url: "https://yourwebsite.com/cancel",
-            landing_page: "GUEST_CHECKOUT",
-          },
-        }),
-      });
-
-      const paypalData = await paypalRes.json();
-
-      if (paypalRes.ok && paypalData.id) {
-        console.log("Redirecting to PayPal with order ID:", paypalData.id);
-        window.location.href = `https://www.sandbox.paypal.com/checkoutnow?token=${paypalData.id}`;
+        // Redirect to confirmation page
+        window.location.href = "/success";
       } else {
-        throw new Error("Failed to create PayPal order.");
+        const errorData = await response.json();
+        console.error("Error adding business:", errorData);
+        alert(`An error occurred: ${errorData.message}`);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Submission error:", error.message);
-        alert(`An error occurred: ${error.message}`);
-      } else {
-        console.error("Unknown submission error occurred.");
-        alert("An unknown error occurred. Please try again.");
-      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
