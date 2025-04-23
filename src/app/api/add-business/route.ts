@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     await client.query("COMMIT");
 
     return NextResponse.json(
-      { message: "Business added successfully!" },
+      { message: "Business added successfully!", businessId },
       { status: 201 }
     );
   } catch (error) {
