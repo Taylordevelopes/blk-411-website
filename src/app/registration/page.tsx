@@ -316,7 +316,12 @@ export default function CustomerAddBusiness() {
   const [tagInput, setTagInput] = useState("");
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === "," || e.key === " ") {
+    if (
+      e.key === "Enter" ||
+      e.key === "," ||
+      e.key === " " ||
+      e.key === "Unidentified"
+    ) {
       e.preventDefault();
 
       const newTag = tagInput.trim().toLowerCase(); // Normalize input
