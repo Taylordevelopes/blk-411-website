@@ -560,7 +560,23 @@ export default function CustomerAddBusiness() {
                 name="tags"
                 placeholder="Type a tag and press space or seperate by comma"
                 value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.includes(",")) {
+                    const newTag = value.replace(",", "").trim();
+                    if (newTag && !formData.tags.split(",").includes(newTag)) {
+                      setFormData({
+                        ...formData,
+                        tags: formData.tags
+                          ? `${formData.tags},${newTag}`
+                          : newTag,
+                      });
+                    }
+                    setTagInput(""); // clear after comma
+                  } else {
+                    setTagInput(value);
+                  }
+                }}
                 onKeyDown={handleTagKeyDown}
               />
             </Form.Group>
