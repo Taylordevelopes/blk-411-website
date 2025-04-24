@@ -316,26 +316,26 @@ export default function CustomerAddBusiness() {
   const [tagInput, setTagInput] = useState("");
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      e.key === "Enter" ||
-      e.key === "," ||
-      e.key === " " ||
-      e.key === "Unidentified"
-    ) {
+    const key = e.key;
+
+    if (key === "Enter" || key === "," || key === " ") {
       e.preventDefault();
 
-      const newTag = tagInput.trim().toLowerCase(); // Normalize input
-      const currentTags = formData.tags
-        .split(",")
-        .map((tag) => tag.trim().toLowerCase())
-        .filter(Boolean);
-
-      if (newTag && !currentTags.includes(newTag)) {
-        const updatedTags = [...currentTags, newTag].join(",");
-        setFormData({ ...formData, tags: updatedTags });
+      const trimmedTag = tagInput.trim();
+      if (
+        trimmedTag &&
+        !formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .includes(trimmedTag)
+      ) {
+        setFormData({
+          ...formData,
+          tags: formData.tags ? `${formData.tags},${trimmedTag}` : trimmedTag,
+        });
       }
 
-      setTagInput(""); // Clear the field
+      setTagInput("");
     }
   };
 
@@ -558,7 +558,7 @@ export default function CustomerAddBusiness() {
               <Form.Control
                 type="text"
                 name="tags"
-                placeholder="Type a tag and press space or seperate by comma"
+                placeholder="Type a tag and press space, comma, or enter"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
