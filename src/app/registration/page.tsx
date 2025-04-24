@@ -317,15 +317,18 @@ export default function CustomerAddBusiness() {
     if (e.key === "Enter" || e.key === "," || e.key === " ") {
       e.preventDefault();
 
-      const newTag = tagInput.trim(); // Remove extra spaces
-      if (newTag && !formData.tags.split(",").includes(newTag)) {
-        setFormData({
-          ...formData,
-          tags: formData.tags ? `${formData.tags},${newTag}` : newTag,
-        });
+      const newTag = tagInput.trim().toLowerCase(); // Normalize input
+      const currentTags = formData.tags
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (newTag && !currentTags.includes(newTag)) {
+        const updatedTags = [...currentTags, newTag].join(",");
+        setFormData({ ...formData, tags: updatedTags });
       }
 
-      setTagInput(""); // Clear the input field
+      setTagInput(""); // Clear the field
     }
   };
 
