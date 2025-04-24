@@ -552,7 +552,7 @@ export default function CustomerAddBusiness() {
                   disabled={!tagInput.trim()}
                   className="fw-bold text-white"
                 >
-                  + Press here to add tag
+                  + Press Here To Add Tag
                 </Button>
               </div>
             </Form.Group>
