@@ -547,11 +547,12 @@ export default function CustomerAddBusiness() {
                   className="me-2"
                 />
                 <Button
-                  variant="outline-secondary"
+                  variant="success" // ✅ green background, white text
                   onClick={handleAddTag}
                   disabled={!tagInput.trim()}
+                  className="fw-bold text-white"
                 >
-                  + Add
+                  + Press here to add tag
                 </Button>
               </div>
             </Form.Group>
