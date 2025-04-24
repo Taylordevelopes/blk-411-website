@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
         category: string;
         description?: string | null;
         phoneNumber: string;
+        mobileNumber?: string | null;
         email: string;
         website?: string | null;
         agentCode?: string | null;
@@ -48,14 +49,15 @@ export async function POST(req: NextRequest) {
 
     // ✅ Insert into `businesses` table
     const businessResult = await client.query(
-      `INSERT INTO businesses (name, category, description, phonenumber, email, website, agentid, status, createdat, updatedat)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', NOW(), NOW()) 
+      `INSERT INTO businesses (name, category, description, phonenumber, mobilenumber, email, website, agentid, status, createdat, updatedat)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', NOW(), NOW()) 
        RETURNING businessid`,
       [
         businessData.name,
         businessData.category,
         businessData.description || null,
         businessData.phoneNumber,
+        businessData.mobileNumber || null,
         businessData.email,
         businessData.website || null,
         agentId, // ✅ Set `agentid` correctly

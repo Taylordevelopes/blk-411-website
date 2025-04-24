@@ -20,6 +20,7 @@ type FormData = {
   category: string;
   description?: string;
   phoneNumber: string;
+  mobileNumber: string;
   email: string;
   website?: string;
   street: string;
@@ -51,6 +52,7 @@ export default function CustomerAddBusiness() {
     category: "",
     description: "",
     phoneNumber: "",
+    mobileNumber: "",
     email: "",
     website: "",
     street: "",
@@ -409,12 +411,23 @@ export default function CustomerAddBusiness() {
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                placeholder="Enter phone number"
+                placeholder="Enter business phone number"
                 isInvalid={!!errors.phoneNumber}
               />
               <Form.Control.Feedback type="invalid">
                 {errors.phoneNumber}
               </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="businessMobileNumber">
+              <Form.Label>Mobile Number</Form.Label>
+              <Form.Control
+                type="text"
+                name="mobileNumber"
+                value={formData.mobileNumber}
+                onChange={handleChange}
+                placeholder="Enter your mobile number"
+              />
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="businessEmail">
@@ -540,7 +553,7 @@ export default function CustomerAddBusiness() {
               <Form.Control
                 type="text"
                 name="tags"
-                placeholder="Type a tag and press Enter"
+                placeholder="Type a tag and press space or seperate by comma"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
