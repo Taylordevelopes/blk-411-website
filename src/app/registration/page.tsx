@@ -341,6 +341,23 @@ export default function CustomerAddBusiness() {
       setTagInput(value); // keep typing
     }
   };
+
+  const handleAddTag = () => {
+    const newTag = tagInput.trim();
+
+    if (
+      newTag &&
+      !formData.tags
+        .split(",")
+        .map((t) => t.trim())
+        .includes(newTag)
+    ) {
+      const updatedTags = formData.tags ? `${formData.tags},${newTag}` : newTag;
+
+      setFormData({ ...formData, tags: updatedTags });
+      setTagInput(""); // clear input
+    }
+  };
   const handleTagRemove = (index: number) => {
     const tagsArray = formData.tags.split(",").filter((_, i) => i !== index);
     setFormData({ ...formData, tags: tagsArray.join(",") });
@@ -524,21 +541,10 @@ export default function CustomerAddBusiness() {
             {/* Tags */}
             <h4>Tags</h4>
             <Form.Group className="mb-3" controlId="businessTags">
-              <Form.Label className="d-flex align-items-center">
-                Tags
-                <OverlayTrigger
-                  placement="left"
-                  overlay={renderTooltip(
-                    "Add keywords separated by commas, e.g., Food, Delivery, Organic."
-                  )}
-                >
-                  <FaQuestionCircle
-                    className="ms-2 text-primary"
-                    style={{ cursor: "pointer" }}
-                  />
-                </OverlayTrigger>
-              </Form.Label>
-              <div className="d-flex flex-wrap align-items-center">
+              <Form.Label>Tags</Form.Label>
+
+              {/* Render tag chips */}
+              <div className="d-flex flex-wrap align-items-center mb-2">
                 {formData.tags.split(",").map((tag, index) =>
                   tag.trim() ? (
                     <span
@@ -557,14 +563,24 @@ export default function CustomerAddBusiness() {
                   ) : null
                 )}
               </div>
-              <Form.Control
-                type="text"
-                name="tags"
-                placeholder="Type a tag and press space, comma, or enter"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onInput={handleTagInput}
-              />
+
+              {/* Input + Add button */}
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  placeholder="Enter a tag"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  className="me-2"
+                />
+                <Button
+                  variant="outline-secondary"
+                  onClick={handleAddTag}
+                  disabled={!tagInput.trim()}
+                >
+                  + Add
+                </Button>
+              </div>
             </Form.Group>
             <h4>Agent Referral Code</h4>
             <Form.Group className="mb-3" controlId="agentCode">
