@@ -315,30 +315,32 @@ export default function CustomerAddBusiness() {
   const renderTooltip = (message: string) => <Tooltip>{message}</Tooltip>;
   const [tagInput, setTagInput] = useState("");
 
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const key = e.key;
+  const handleTagInput = (e: React.FormEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value;
 
-    if (key === "Enter" || key === "," || key === " ") {
-      e.preventDefault();
+    // Check if the user just finished a tag (e.g. "pizza, " or "coffee ")
+    const endsWithSeparator = value.endsWith(",") || value.endsWith(" ");
 
-      const trimmedTag = tagInput.trim();
+    if (endsWithSeparator) {
+      const newTag = value.trim().replace(/,$/, ""); // trim and remove comma
       if (
-        trimmedTag &&
+        newTag &&
         !formData.tags
           .split(",")
           .map((t) => t.trim())
-          .includes(trimmedTag)
+          .includes(newTag)
       ) {
         setFormData({
           ...formData,
-          tags: formData.tags ? `${formData.tags},${trimmedTag}` : trimmedTag,
+          tags: formData.tags ? `${formData.tags},${newTag}` : newTag,
         });
       }
 
-      setTagInput("");
+      setTagInput(""); // reset input field
+    } else {
+      setTagInput(value); // keep typing
     }
   };
-
   const handleTagRemove = (index: number) => {
     const tagsArray = formData.tags.split(",").filter((_, i) => i !== index);
     setFormData({ ...formData, tags: tagsArray.join(",") });
@@ -561,7 +563,7 @@ export default function CustomerAddBusiness() {
                 placeholder="Type a tag and press space, comma, or enter"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
+                onInput={handleTagInput}
               />
             </Form.Group>
             <h4>Agent Referral Code</h4>
