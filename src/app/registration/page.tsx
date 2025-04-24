@@ -315,33 +315,6 @@ export default function CustomerAddBusiness() {
   const renderTooltip = (message: string) => <Tooltip>{message}</Tooltip>;
   const [tagInput, setTagInput] = useState("");
 
-  const handleTagInput = (e: React.FormEvent<HTMLInputElement>) => {
-    const value = e.currentTarget.value;
-
-    // Check if the user just finished a tag (e.g. "pizza, " or "coffee ")
-    const endsWithSeparator = value.endsWith(",") || value.endsWith(" ");
-
-    if (endsWithSeparator) {
-      const newTag = value.trim().replace(/,$/, ""); // trim and remove comma
-      if (
-        newTag &&
-        !formData.tags
-          .split(",")
-          .map((t) => t.trim())
-          .includes(newTag)
-      ) {
-        setFormData({
-          ...formData,
-          tags: formData.tags ? `${formData.tags},${newTag}` : newTag,
-        });
-      }
-
-      setTagInput(""); // reset input field
-    } else {
-      setTagInput(value); // keep typing
-    }
-  };
-
   const handleAddTag = () => {
     const newTag = tagInput.trim();
 
