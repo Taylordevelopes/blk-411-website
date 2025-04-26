@@ -438,7 +438,7 @@ export default function CustomerAddBusiness() {
                 required
               >
                 <option value="">Select a category</option>
-                <option value="Food & Dining">Food & Dining</option>
+                <option value="Restaurant">Food & Dining</option>
                 <option value="Retail & Shopping">Retail & Shopping</option>
                 <option value="Health & Wellness">Health & Wellness</option>
                 <option value="Beauty & Personal Care">
@@ -462,6 +462,7 @@ export default function CustomerAddBusiness() {
                 </option>
                 <option value="Medical Services">Medical Services</option>
                 <option value="Transportation">Transportation</option>
+                <option value="Car Buying">Car Sales</option>
                 <option value="Professional Services">
                   Professional Services
                 </option>
