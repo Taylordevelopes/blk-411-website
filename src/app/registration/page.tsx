@@ -78,6 +78,56 @@ export default function CustomerAddBusiness() {
     postalCode?: string;
   }>({});
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategory = e.target.value;
+
+    // Always update the selected category
+    setFormData((prevFormData) => {
+      let updatedTags = prevFormData.tags.split(",").map((tag) => tag.trim());
+
+      // Remove previous category tags if any
+      const categoryList = [
+        "Food & Dining",
+        "Retail & Shopping",
+        "Health & Wellness",
+        "Beauty & Personal Care",
+        "Home Services",
+        "Automotive Services",
+        "Financial Services",
+        "Legal Services",
+        "Real Estate",
+        "Technology & IT",
+        "Education & Tutoring",
+        "Event Services",
+        "Arts & Entertainment",
+        "Construction & Contractors",
+        "Medical Services",
+        "Transportation",
+        "Professional Services",
+        "Travel & Hospitality",
+        "Non-Profit & Community",
+        "Childcare Services",
+        "Pet Services",
+        "Manufacturing & Industrial",
+        "Media & Marketing",
+        "Sports & Fitness",
+      ];
+
+      updatedTags = updatedTags.filter((tag) => !categoryList.includes(tag));
+
+      // Add new selected category as a tag
+      if (selectedCategory) {
+        updatedTags.push(selectedCategory);
+      }
+
+      return {
+        ...prevFormData,
+        category: selectedCategory,
+        tags: updatedTags.join(","),
+      };
+    });
+  };
+
   // Handle input changes
   const handleChange = (
     e: React.ChangeEvent<
@@ -371,7 +421,7 @@ export default function CustomerAddBusiness() {
                 <OverlayTrigger
                   placement="left"
                   overlay={renderTooltip(
-                    "Specify the type of business, e.g., Restaurant, Retail, etc."
+                    "Select the main category that best fits your business type."
                   )}
                 >
                   <FaQuestionCircle
@@ -380,13 +430,55 @@ export default function CustomerAddBusiness() {
                   />
                 </OverlayTrigger>
               </Form.Label>
-              <Form.Control
-                type="text"
+
+              <Form.Select
                 name="category"
                 value={formData.category}
-                onChange={handleChange}
-                placeholder="Enter business category"
-              />
+                onChange={handleCategoryChange}
+                required
+              >
+                <option value="">Select a category</option>
+                <option value="Food & Dining">Food & Dining</option>
+                <option value="Retail & Shopping">Retail & Shopping</option>
+                <option value="Health & Wellness">Health & Wellness</option>
+                <option value="Beauty & Personal Care">
+                  Beauty & Personal Care
+                </option>
+                <option value="Home Services">Home Services</option>
+                <option value="Automotive Services">Automotive Services</option>
+                <option value="Financial Services">Financial Services</option>
+                <option value="Legal Services">Legal Services</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="Technology & IT">Technology & IT</option>
+                <option value="Education & Tutoring">
+                  Education & Tutoring
+                </option>
+                <option value="Event Services">Event Services</option>
+                <option value="Arts & Entertainment">
+                  Arts & Entertainment
+                </option>
+                <option value="Construction & Contractors">
+                  Construction & Contractors
+                </option>
+                <option value="Medical Services">Medical Services</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Professional Services">
+                  Professional Services
+                </option>
+                <option value="Travel & Hospitality">
+                  Travel & Hospitality
+                </option>
+                <option value="Non-Profit & Community">
+                  Non-Profit & Community
+                </option>
+                <option value="Childcare Services">Childcare Services</option>
+                <option value="Pet Services">Pet Services</option>
+                <option value="Manufacturing & Industrial">
+                  Manufacturing & Industrial
+                </option>
+                <option value="Media & Marketing">Media & Marketing</option>
+                <option value="Sports & Fitness">Sports & Fitness</option>
+              </Form.Select>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="businessDescription">
