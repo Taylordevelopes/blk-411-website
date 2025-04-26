@@ -582,7 +582,7 @@ export default function CustomerAddBusiness() {
               >
                 <option value="">Select a state</option>
                 {STATES.map((state) => (
-                  <option key={state.code} value={state.name}>
+                  <option key={state.code} value={state.code}>
                     {state.name}
                   </option>
                 ))}
