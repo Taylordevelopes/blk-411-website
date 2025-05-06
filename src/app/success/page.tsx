@@ -3,11 +3,9 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
 import Container from "react-bootstrap/Container";
-import { useRouter } from "next/navigation"; // ⬅️ Required for getting token
+// ⬅️ Required for getting token
 
 export default function SuccessPage() {
-  const router = useRouter();
-
   useEffect(() => {
     const capturePayment = async (token: string) => {
       try {
