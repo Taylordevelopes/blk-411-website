@@ -324,7 +324,7 @@ export default function CustomerAddBusiness() {
             {
               reference_id: "business_registration",
               amount: {
-                value: "1.00",
+                value: "75.00",
                 currency_code: "USD",
               },
             },
