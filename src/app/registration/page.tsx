@@ -138,7 +138,7 @@ export default function CustomerAddBusiness() {
 
     let error = "";
 
-    if (name === "phoneNumber") {
+    if (name === "phoneNumber" || name === "mobileNumber") {
       const formattedValue = value
         .replace(/[^\d]/g, "") // Remove non-digits
         .replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3"); // Format as (XXX) XXX-XXXX
@@ -495,7 +495,7 @@ export default function CustomerAddBusiness() {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="businessPhoneNumber">
-              <Form.Label>Phone Number</Form.Label>
+              <Form.Label>Business Phone Number</Form.Label>
               <Form.Control
                 type="text"
                 name="phoneNumber"

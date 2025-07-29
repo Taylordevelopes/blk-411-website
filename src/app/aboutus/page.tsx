@@ -1,3 +1,4 @@
+import { useState } from "react";
 import SectionLayout from "../components/SectionLayout";
 
 export default function AboutPage() {
