@@ -273,6 +273,13 @@ export default function CustomerAddBusiness() {
         street: formData.street,
         city: formData.city,
         state: formData.state,
+        latitude,
+        longitude,
+      };
+
+      const citylocationsData = {
+        city: formData.city,
+        state: formData.state,
         postalCode: formData.postalCode,
         country: "USA",
         latitude,
@@ -290,13 +297,19 @@ export default function CustomerAddBusiness() {
         businessData,
         addressData,
         tagsData,
+        citylocationsData,
       });
 
       // Step 3: Save to your API first
       const apiRes = await fetch("/api/add-business", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessData, addressData, tagsData }),
+        body: JSON.stringify({
+          businessData,
+          addressData,
+          tagsData,
+          citylocationsData,
+        }),
       });
 
       if (!apiRes.ok) {
@@ -312,7 +325,12 @@ export default function CustomerAddBusiness() {
       // Optional: Store full data if needed post-payment
       sessionStorage.setItem(
         "businessData",
-        JSON.stringify({ businessData, addressData, tagsData })
+        JSON.stringify({
+          businessData,
+          addressData,
+          tagsData,
+          citylocationsData,
+        })
       );
 
       // Step 4: Create PayPal order

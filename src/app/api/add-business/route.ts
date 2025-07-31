@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
       businessData,
       addressData,
       tagsData,
+      citylocationsData,
     }: {
       businessData: {
         name: string;
@@ -27,6 +28,12 @@ export async function POST(req: NextRequest) {
         state: string;
         postalCode: string;
         country: string;
+        latitude: number;
+        longitude: number;
+      };
+      citylocationsData: {
+        city: string;
+        state: string;
         latitude: number;
         longitude: number;
       };
@@ -79,6 +86,22 @@ export async function POST(req: NextRequest) {
         addressData.country,
         addressData.latitude,
         addressData.longitude,
+      ]
+    );
+
+    await client.query(
+      `
+  INSERT INTO city_locations (city, state, latitude, longitude)
+  SELECT $1, $2, $3, $4
+  WHERE NOT EXISTS (
+    SELECT 1 FROM city_locations WHERE city = $1 AND state = $2
+  )
+  `,
+      [
+        citylocationsData.city,
+        citylocationsData.state,
+        citylocationsData.latitude,
+        citylocationsData.longitude,
       ]
     );
 
