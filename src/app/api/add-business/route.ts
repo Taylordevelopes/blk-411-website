@@ -92,10 +92,8 @@ export async function POST(req: NextRequest) {
     await client.query(
       `
   INSERT INTO city_locations (city, state, latitude, longitude)
-  SELECT $1, $2, $3, $4
-  WHERE NOT EXISTS (
-    SELECT 1 FROM city_locations WHERE city = $1 AND state = $2
-  )
+  VALUES (lower($1), $2, $3, $4)
+  ON CONFLICT (city, state) DO NOTHING
   `,
       [
         citylocationsData.city,
