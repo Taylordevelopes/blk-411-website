@@ -273,6 +273,8 @@ export default function CustomerAddBusiness() {
         street: formData.street,
         city: formData.city,
         state: formData.state,
+        postalCode: formData.postalCode,
+        country: "USA",
         latitude,
         longitude,
       };
