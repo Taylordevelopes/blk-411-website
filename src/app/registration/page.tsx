@@ -280,8 +280,6 @@ export default function CustomerAddBusiness() {
       const citylocationsData = {
         city: formData.city,
         state: formData.state,
-        postalCode: formData.postalCode,
-        country: "USA",
         latitude,
         longitude,
       };
